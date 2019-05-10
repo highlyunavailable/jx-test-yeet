@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/highlyunavailable/jx-test-yeet:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/highlyunavailable/jx-test-yeet:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: jx-test-yeet
+        chartPath: charts/jx-test-yeet
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/highlyunavailable/jx-test-yeet'
+          image.tag: '{{.DIGEST_HEX}}'
